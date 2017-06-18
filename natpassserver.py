@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+
 import socket
 import sys
 import random
@@ -9,6 +12,8 @@ Port = None
 WAITING = 0
 SENDING = 1
 ACCEPTED = 2
+RESENDING = 3
+SENDED = 4
 
 if len(sys.argv) == 2:
     IP = sys.argv[1]
@@ -27,7 +32,7 @@ while True:
     response = response.decode('utf-8').split('\n')
     if response[0] == 'request':
         if response[1] in clientList:
-            clientList[response[-1]] = [addr[0], addr[1], response[1], ACCEPTED, random.randint(1, 10000)]
+            clientList[response[-1]] = [addr[0], addr[1], response[1], ACCEPTED, str(random.randint(1, 10000))]
             data = 'wait\n' + clientList[response[-1]][4]
             s.sendto(data.encode('utf-8'), addr)
             clientList[response[1]][3] = SENDING
@@ -38,6 +43,13 @@ while True:
             data = 'wait\n' + clientList[response[-1]][4]
             s.sendto(data.encode('utf-8'), addr)
     elif response[0] == 'done':
-        pass
+        if clientList[responese[-1]][3] == SENDING:
+            clientList[responese[-1]][3] = SENDED
+            temp = clientList[responese[-1]][2]
+            clientList[temp][3] = RESENDING
+            data = 'send\n' + addr[0] + '\n' + str(addr[1]) + '\n' +clientList[temp][4]
+            s.sendto(data.encode('utf-8'), (clientList[temp][0], clientList[temp][1]))
+        elif clientList[responese[-1]][3] == RESENDING:
+            clientList[responese[-1]][3] = SENDED
     elif response[0] == 'success':
         clientList.pop(clientList.pop(response[-1])[2])
