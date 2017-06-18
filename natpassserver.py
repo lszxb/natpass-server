@@ -13,7 +13,7 @@ WAITING = 0
 SENDING = 1
 ACCEPTED = 2
 RESENDING = 3
-SENDED = 4
+ENDED = 4
 
 if len(sys.argv) == 2:
     IP = sys.argv[1]
@@ -23,7 +23,6 @@ elif len(sys.argv) == 3:
     Port = sys.argv[2]
 else:
     exit(1)
-
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.bind((IP, Port))
@@ -44,13 +43,12 @@ while True:
             s.sendto(data.encode('utf-8'), addr)
     elif response[0] == 'done':
         if clientList[response[-1]][3] == SENDING:
-            clientList[response[-1]][3] = SENDED
+            clientList[response[-1]][3] = ENDED
             temp = clientList[response[-1]][2]
             clientList[temp][3] = RESENDING
-            data = 'send\n' + addr[0] + '\n' + str(addr[1]) + '\n' +clientList[temp][4]
+            data = 'send\n' + addr[0] + '\n' + str(addr[1]) + '\n' + clientList[temp][4]
             s.sendto(data.encode('utf-8'), (clientList[temp][0], clientList[temp][1]))
         elif clientList[response[-1]][3] == RESENDING:
-            clientList[response[-1]][3] = SENDED
+            clientList[response[-1]][3] = ENDED
     elif response[0] == 'success':
         clientList.pop(clientList.pop(response[-1])[2])
-        print('End')
